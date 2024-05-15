@@ -1,0 +1,2 @@
+Deple = 'DeeplAPI'
+Chat = "GDPAPI"
