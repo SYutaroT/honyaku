@@ -1,6 +1,7 @@
 import json
 import re
 import deepl
+import sys
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 import API_Libla
@@ -18,9 +19,12 @@ import subprocess
 import PySimpleGUI as sg
 import requests
 
+myfile = os.getcwd()
+print(myfile)
 
-def choose_file():
-    # ファイル選択ダイアログのレイアウト
+
+def choose_file():  # ファイル選択ダイアログのレイアウト
+
     layout = [
         [sg.Text('ファイルを選択してください')],
         [sg.Input(), sg.FileBrowse()],
@@ -33,10 +37,10 @@ def choose_file():
     # イベントループ
     while True:
         event, values = window.read()
-        if event in (None, 'Cancel'):  # キャンセルまたはウィンドウを閉じた場合
+        if event in (None, 'Cancel'):
             break
-        elif event == 'OK':  # OKが押された場合
-            file_path = values[0]  # 選択されたファイルのパス
+        elif event == 'OK':
+            file_path = values[0]
             window.close()
             return file_path
 
@@ -44,24 +48,27 @@ def choose_file():
     return None
 
 
-selected_file = choose_file()
+# ----------------------------------------------------------------辞書
+csv = myfile+"/MyGlossary.csv"  # 辞書csv
+glasspath = fr"{csv}"  # 拡張子を除去
+
+# ----------------------------------------------------------------ファイル選択
+selected_file = choose_file()  # ファイルの選択
 print(selected_file)
-# input_file = 'sample'
 file_name_with_extension = os.path.basename(selected_file)
-glasspath = r"C:/Users/sachy/Desktop/翻訳/MyGlossary.csv"
-# 拡張子を除去
 input_file = os.path.splitext(file_name_with_extension)[0]
 input_text_file = input_file+'.pdf'
 print(input_text_file)
 file_path = 'output_directory/'+input_file+'.mmd'
 api_key = API_Libla.Deple  # DeepL APIキー
+ttf = myfile+"/GenShinGothic-ExtraLight.ttf"  # フォント
 pdfmetrics.registerFont(TTFont(
-    'IPAexGothic',  "C:/Users/sachy/Desktop/翻訳/GenShinGothic-ExtraLight.ttf"))
+    'IPAexGothic',  ttf))
 output_file_path = input_file+'.txt'
-glossary_id = "a9515ff1-0ea1-4cbd-9a48-a73dc957fe6f"
+glossary_id = API_Libla.Glossary
 
 
-def run_command(command):
+def run_command(command):  # プロセスが成功したかどうかの確認
     try:
         subprocess.run(command, check=True)
         print("sucsess")
@@ -79,7 +86,7 @@ def main():
 
 def extract_paragraphs_from_pdf(pdf_path):
     with open(pdf_path, 'rb') as file:
-        print(pdf_path)
+        # print(pdf_path)
         reader = PyPDF2.PdfReader(file)
         paragraphs = []
         for page in reader.pages:
@@ -99,15 +106,15 @@ def generate_stringsQE():
     return ['QE' + a + b + c for a in alphabet for b in alphabet for c in alphabet]
 
 
-def extract_math_and_text(file_path, input_text_file):
+def extract_math_and_text(file_path, input_text_file):  # PDFから数式を抽出
     with open(file_path, 'r', encoding='utf-8') as file:
         content = file.read()
 
-    # 数式の抽出
+    # 数式の抽出(数式を2種類に分ける)
     extracted_math = re.findall(r'\\\[.*?\\\]', content)
     extracted_math2 = re.findall(r'\\\(.*?\\\)', content)
 
-    # 数式をプレースホルダーで置き換え
+    # 2種の数式をそれぞれのルールに基づいて代替文字に置き換え
     string_gen1 = generate_stringsQJ()
     string_gen2 = generate_stringsQE()
     replaced_strings1 = []
@@ -133,7 +140,7 @@ def extract_math_and_text(file_path, input_text_file):
     return extracted_math, paragraphs, extracted_math2, replaced_strings1, replaced_strings2
 
 
-def translate_paragraphs(paragraphs, api_key, glossary_id, source_lang="EN", target_lang="JA"):
+def translate_paragraphs(paragraphs, api_key, glossary_id, source_lang="EN", target_lang="JA"):  # 段落ごとにDeepleAPIで翻訳
     translated_paragraphs = []
     references_started = False  # REFERENCESセクションが始まったかどうかを追跡するフラグ
 
@@ -156,9 +163,9 @@ def translate_paragraphs(paragraphs, api_key, glossary_id, source_lang="EN", tar
                 'glossary_id': glossary_id
             }
             response = requests.post(url, data=data)
-            print("Request data:", data)  # デバッグ情報
-            print("Response status:", response.status_code)  # レスポンスステータス
-            print("Response content:", response.text)  # レスポンス内容
+            # print("Request data:", data)  # デバッグ情報
+            # print("Response status:", response.status_code)  # レスポンスステータス
+            # print("Response content:", response.text)  # レスポンス内容
             if response.status_code == 200:
                 result = response.json()
                 translated_text = result['translations'][0]['text']
@@ -176,7 +183,7 @@ def save_text_to_file(text, file_path):
             file.write(paragraph)
 
 
-def create_pdf_with_wrapping(input_file_path, output_pdf_path, font_name='IPAexGothic', font_path="C:/Users/sachy/Desktop/翻訳/GenShinGothic-ExtraLight.ttf"):
+def create_pdf_with_wrapping(input_file_path, output_pdf_path, font_name='IPAexGothic', font_path=myfile+"/GenShinGothic-ExtraLight.ttf"):
     # フォントの登録
     pdfmetrics.registerFont(TTFont(font_name, font_path))
 
