@@ -4,7 +4,7 @@ import deepl
 import sys
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-import API_Libla
+import API_Libla  # APIキーを保存したファイル。安全のためGitには上げていない
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from reportlab.pdfbase import pdfmetrics
