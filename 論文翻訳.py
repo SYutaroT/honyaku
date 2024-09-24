@@ -4,7 +4,7 @@ import deepl
 import sys
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-import API_Libla  # APIキーを保存したファイル。安全のためGitには上げていない
+from dotenv import load_dotenv
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from reportlab.pdfbase import pdfmetrics
@@ -18,6 +18,7 @@ import PyPDF2
 import subprocess
 import PySimpleGUI as sg
 import requests
+load_dotenv()
 
 myfile = os.getcwd()
 print(myfile)
@@ -60,12 +61,12 @@ input_file = os.path.splitext(file_name_with_extension)[0]
 input_text_file = input_file+'.pdf'
 print(input_text_file)
 file_path = 'output_directory/'+input_file+'.mmd'
-api_key = API_Libla.Deple  # DeepL APIキー
+api_key = os.getenv("Deple")  # DeepL APIキー
 ttf = myfile+"/GenShinGothic-ExtraLight.ttf"  # フォント
 pdfmetrics.registerFont(TTFont(
     'IPAexGothic',  ttf))
 output_file_path = input_file+'.txt'
-glossary_id = API_Libla.Glossary
+glossary_id = os.getenv("Glossary")
 
 
 def run_command(command):  # プロセスが成功したかどうかの確認

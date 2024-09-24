@@ -1,15 +1,14 @@
 
-import API_Libla
-
-
+from dotenv import load_dotenv
+import os
 import requests
 import json
-
+load_dotenv()
 # DeepL API URL
 url = 'https://api.deepl.com/v2/glossaries'
 
 # APIキーの設定 (実際のAPIキーに置き換えてください)
-api_key = API_Libla.Deple  # DeepL APIキー
+api_key = os.getenv("Deple")
 
 # リクエストヘッダ
 headers = {
